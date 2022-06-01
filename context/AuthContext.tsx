@@ -31,21 +31,24 @@ export function AuthProvider({ children } : AuthProviderProps){
   const isAuthentication = !!user;
 
   useEffect(() => {
-    const { 'nextauth.token': token } = parseCookies()
-    if(token) {
-      api.get('/me').then(response => {
-        console.log('entrou aqui token')
-        console.log(response)
-        // const { email, permissions, roles} = response.data;
+    const {'nextauth.token': token} = parseCookies();
+    console.log(token)
 
-        // setUser({
-        //   email, 
-        //   permissions, 
-        //   roles
-        // })
+
+    if(token) {
+      api
+        .get('/me')
+          .then(response => {
+            const { email, permissions, roles } = response.data;
+
+            setUser({
+              email,
+              permissions,
+              roles
+            })
       })
     }
-  }, []);
+  }, [])
 
  async function signIn({ email, password } : SignInCredentials){
     try {
@@ -54,17 +57,17 @@ export function AuthProvider({ children } : AuthProviderProps){
         password
       })   
       console.log('entrou aqui')
+
       const { permissions , roles, refreshToken, token } = response.data;
 
       setCookie(undefined, 'nextauth.token', token, { 
         maxAge: 60 * 60 * 25 * 30, //30 days
-        path: '/'
+        path: '/',
       });
       setCookie(undefined, 'nextauth.refreshToken', refreshToken, { 
         maxAge: 60 * 60 * 25 * 30,
         path: '/'
       });
-
 
       setUser({
         email, 
@@ -72,11 +75,13 @@ export function AuthProvider({ children } : AuthProviderProps){
         roles
       })
 
-      api.defaults.headers['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers['Authorization'] = `Bearer ${token}`
 
       Router.push('/dashboard');
 
     } catch (err) {
+      console.log('Deu erro')
+
       console.log(err);
     }  
   }
